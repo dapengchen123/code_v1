@@ -150,7 +150,9 @@ def avepool_dismat(distmat,  query_ids=None, gallery_ids=None,
     gallery_seq = np.array(single_gallery)
 
     sq_len = len(single_query)
+    print(sq_len)
     sg_len = len(single_gallery)
+    print(sg_len)
     single_distmat = np.zeros((sq_len, sg_len))
 
     for m in range(sq_len):
