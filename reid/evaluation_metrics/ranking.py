@@ -169,7 +169,7 @@ def avepool_dismat(distmat,  query_ids=None, gallery_ids=None,
              distmean = np.mean(distmat_qg)
              single_distmat[m, n] = distmean
 
-
+    print(single_dismat)
     return single_distmat, query_seq[:,0], gallery_seq[:,0], query_seq[:,1], gallery_seq[:,1]
 
 
