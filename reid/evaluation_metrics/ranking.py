@@ -157,19 +157,19 @@ def avepool_dismat(distmat,  query_ids=None, gallery_ids=None,
 
     for m in range(sq_len):
         for n in range(sg_len):
-             q_ids = query_seq[m, 0]
-             q_cam = query_seq[m, 1]
-             g_ids = gallery_seq[n,0]
-             g_cam = gallery_seq[n,1]
+            q_ids = query_seq[m, 0]
+            q_cam = query_seq[m, 1]
+            g_ids = gallery_seq[n,0]
+            g_cam = gallery_seq[n,1]
 
-             q_filter = (query_ids == q_ids)&(query_cams == q_cam)
-             g_filter = (gallery_ids == g_ids)&(gallery_cams == g_cam)
-             distmat_q  = distmat[q_filter, :]
-             distmat_qg = distmat_q[:, g_filter]
-             distmean = np.mean(distmat_qg)
-             single_distmat[m, n] = distmean
+            q_filter = (query_ids == q_ids)&(query_cams == q_cam)
+            g_filter = (gallery_ids == g_ids)&(gallery_cams == g_cam)
+            distmat_q  = distmat[q_filter, :]
+            distmat_qg = distmat_q[:, g_filter]
+            distmean = np.mean(distmat_qg)
+            single_distmat[m, n] = distmean
 
-    print(single_dismat)
+    print(single_distmat)
     return single_distmat, query_seq[:,0], gallery_seq[:,0], query_seq[:,1], gallery_seq[:,1]
 
 
