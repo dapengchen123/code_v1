@@ -210,7 +210,7 @@ def main(args):
     checkpoint = load_checkpoint(osp.join(args.logs_dir, 'model_best.pth.tar'))
     model.load_state_dict(checkpoint['state_dict'])
     metric.train(model, train_loader)
-    evaluator.evaluate(test_loader, dataset.query, dataset.gallery, metric)
+    top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
 
 
 
