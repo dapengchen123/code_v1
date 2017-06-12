@@ -76,10 +76,11 @@ class ResNet(nn.Module):
         x = x.view(x.size(0), -1)
 
         if self.has_embedding:
-            print("x before pool x:{}".format(torchmean(x)))
+
             x = self.feat(x)
-            print("x after  pool x:{}".format(torchmean(x)))
+            print("x before bn x:{}".format(torchmean(x)))
             x = self.feat_bn(x)
+            print("x after  bn x:{}".format(torchmean(x)))
         if self.norm:
             x = x / x.norm(2, 1).expand_as(x)
         elif self.has_embedding:
