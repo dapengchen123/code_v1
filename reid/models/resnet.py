@@ -86,8 +86,6 @@ class ResNet(nn.Module):
             x = self.drop(x)
         if self.num_classes > 0:
             x = self.classifier(x)
-
-        print(torchmean(x))
         return x
 
     def reset_params(self):
