@@ -15,7 +15,7 @@ class BaseTrainer(object):
         self.model = model
         self.criterion = criterion
 
-    def train(self, epoch, data_loader, optimizer, print_freq=100):
+    def train(self, epoch, data_loader, optimizer, print_freq=50):
         self.model.train()
 
         batch_time = AverageMeter()
