@@ -24,12 +24,15 @@ class BaseTrainer(object):
         precisions = AverageMeter()
 
         end = time.time()
-        for i, inputs in enumerate(data_loader):
-            data_time.update(time.time() - end)
 
+        for i, inputs in enumerate(data_loader):
+
+            if inputs[3].size()[0] < data_loader.batch_size/2:
+                continue
+
+            data_time.update(time.time() - end)
             inputs, targets = self._parse_data(inputs)
             loss, prec1 = self._forward(inputs, targets)
-
             losses.update(loss.data[0], targets.size(0))
             precisions.update(prec1, targets.size(0))
 
