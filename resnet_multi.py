@@ -191,7 +191,7 @@ def main(args):
 
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
-
+        print("we start testing")
         if epoch % 10 == 0:
             #top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
             top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
