@@ -246,7 +246,7 @@ if __name__ == '__main__':
     # optimizer
     parser.add_argument('--optimizer', type=str, default='sgd',
                         choices=['sgd', 'adam'])
-    parser.add_argument('--lr', type=float, default=0.01)
+    parser.add_argument('--lr', type=float, default=0.011)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=5e-4)
     # training configs
