@@ -70,17 +70,16 @@ class ResNet(nn.Module):
 
         if self.cut_at_pooling:
             return x
-
+        print("x before pool x:{}".format(torchmean(x)))
         x = F.avg_pool2d(x, x.size()[2:])
+        print("x after  pool x:{}".format(torchmean(x)))
         x = x.view(x.size(0), -1)
 
         if self.has_embedding:
             x = self.feat(x)
             x = self.feat_bn(x)
         if self.norm:
-            print("x before norm x:{}".format(torchmean(x)))
             x = x / x.norm(2, 1).expand_as(x)
-            print("x after  norm x:{}".format(torchmean(x)))
         elif self.has_embedding:
             x = F.relu(x)
         if self.dropout > 0:
