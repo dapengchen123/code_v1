@@ -177,7 +177,7 @@ def main(args):
 
     def adjust_lr(epoch):
         if args.optimizer == 'sgd':
-            lr = args.lr * (0.1 ** (epoch // 40))
+            lr = args.lr * (0.01 ** (epoch // 40))
         elif args.optimizer == 'adam':
             lr = args.lr if epoch <= 100 else \
                 args.lr * (0.001 ** (epoch - 100) / 50)
@@ -192,7 +192,7 @@ def main(args):
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
         print("we start testing")
-        if epoch % 10 == 0:
+        if epoch % 3 == 0:
             #top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
             top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
             is_best = top1 > best_top1
