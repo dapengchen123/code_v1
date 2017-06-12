@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import torch.nn.functional as F
+from torch import mean as torchmean
 import torch.nn.init as init
 from ..utils import *
 from ..utils.visualize import*
@@ -77,7 +78,9 @@ class ResNet(nn.Module):
             x = self.feat(x)
             x = self.feat_bn(x)
         if self.norm:
+            print("x before norm x:{}".format(torchmean(x)))
             x = x / x.norm(2, 1).expand_as(x)
+            print("x after  norm x:{}".format(torchmean(x)))
         elif self.has_embedding:
             x = F.relu(x)
         if self.dropout > 0:
