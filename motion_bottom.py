@@ -129,6 +129,76 @@ def main(args):
 
 
     # Distance metric
+    metric = DistanceMetric(algorithm=args.dist_metric)
+
+    # Evaluator
+    evaluator = Evaluator(model)
+    if args.evaluate:
+        metric.train(model, train_loader)
+        print("Test:")
+        evaluator.evaluate(test_loader, dataset.query, dataset.gallery, metric)
+        return
+
+
+    # Criterion
+    if args.loss == 'xentropy':
+        criterion = torch.nn.CrossEntropyLoss()
+    elif args.loss == 'oim':
+        criterion = OIMLoss(model.module.num_features, num_classes,
+                            scalar=args.oim_scalar, momentum=args.oim_momentum)
+    elif args.loss == 'triplet':
+        criterion = TripletLoss(margin=args.triplet_margin)
+    else:
+        raise ValueError("Cannot recognize loss type:", args.loss)
+    criterion.cuda()
+
+    # Optimizer
+    if args.optimizer == 'sgd':
+        if args.loss == 'xentropy':
+            base_param_ids = set(map(id, model.module.base.parameters()))
+            new_params = [p for p in model.parameters() if id(p) not in base_param_ids]
+            param_groups = [
+                {'params': model.module.base.parameters(), 'lr_mult': 0.1},
+                {'params': new_params, 'lr_mult': 1.0}]
+        else:
+            param_groups = model.parameters()
+        optimizer = torch.optim.SGD(param_groups, lr=args.lr,
+                                    momentum=args.momentum,
+                                    weight_decay=args.weight_decay,
+                                    nesterov=True)
+
+    elif args.optimizer == 'adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr,
+                                     weight_decay=args.weight_decay)
+    else:
+        raise ValueError("Cannot recognize optimizer type:", args.optimizer)
+
+    # Trainer
+
+    trainer = Trainer(model, criterion)
+
+    # Schedule learning rate
+
+    def adjust_lr(epoch):
+        if args.optimizer == 'sgd':
+            lr = args.lr * (0.1 ** (epoch // 40))
+        elif args.optimizer == 'adam':
+            lr = args.lr if epoch <= 100 else \
+                args.lr * (0.001 ** (epoch - 100) / 50)
+        else:
+            raise ValueError("Cannot recognize optimizer type:", args.optimizer)
+        for g in optimizer.param_groups:
+            g['lr'] = lr * g.get('lr_mult', 1)
+
+    # Starting training
+    for epoch in range(args.start_epoch, args.epochs):
+
+
+
+
+
+
+
 
 
 
