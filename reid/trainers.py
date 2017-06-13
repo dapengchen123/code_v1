@@ -26,9 +26,9 @@ class BaseTrainer(object):
         end = time.time()
 
         for i, inputs in enumerate(data_loader):
-            if inputs[3].size()[0] < data_loader.batch_size/2:
-                print(inputs[3].size()[0])
-                continue
+            #if inputs[3].size()[0] < data_loader.batch_size/2:
+            #    print(inputs[3].size()[0])
+            #    continue
 
             data_time.update(time.time() - end)
             inputs, targets = self._parse_data(inputs)
