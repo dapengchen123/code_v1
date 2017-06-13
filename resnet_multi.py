@@ -177,7 +177,7 @@ def main(args):
 
     def adjust_lr(epoch):
         if args.optimizer == 'sgd':
-            lr = args.lr * (0.01 ** (epoch // 40))
+            lr = args.lr * (0.1 ** (epoch // 40))
         elif args.optimizer == 'adam':
             lr = args.lr if epoch <= 100 else \
                 args.lr * (0.001 ** (epoch - 100) / 50)
@@ -191,8 +191,9 @@ def main(args):
 
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
-        print("we start testing")
+
         if epoch % 3 == 0:
+            print("we start testing")
             #top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
             top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
             is_best = top1 > best_top1
@@ -213,13 +214,12 @@ def main(args):
     top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
 
 
-
-
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(description="ID Training ResNet Model")
     # data
     parser.add_argument('-d', '--dataset', type=str, default='cuhk03',
-                        choices=['cuhk03', 'market1501', 'viper', 'dukemtmc','ilidsvid'])
+                        choices=['cuhk03', 'market1501', 'viper', 'dukemtmc'])
     parser.add_argument('-b', '--batch-size', type=int, default=256)
     parser.add_argument('-j', '--workers', type=int, default=4)
     parser.add_argument('--split', type=int, default=0)
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     # optimizer
     parser.add_argument('--optimizer', type=str, default='sgd',
                         choices=['sgd', 'adam'])
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=5e-4)
     # training configs
