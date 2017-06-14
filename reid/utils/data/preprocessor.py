@@ -22,7 +22,6 @@ class Preprocessor(object):
 
     def _get_single_item(self, index):
         fname, pid, camid = self.dataset[index]
-        fpath = fname
         if self.root is not None:
             fpath_img = osp.join(self.root[0], fname)
             fpath_flow = osp.join(self.root[1], fname)
