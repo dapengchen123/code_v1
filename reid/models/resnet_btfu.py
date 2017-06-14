@@ -74,10 +74,10 @@ class ResNet_btfu(nn.Module):
 
         for name, module in self.base._modules.items():
             if name == 'conv1':
-                x_img =  x[:, 0:3, ...]
+                x_img = x[:, 0:3, ...]
                 x_motion = x[:, 3:5, ...]
                 x = module(x_img)+self.conv0(x_motion)
-
+                continue
             if name == 'avgpool':
                 break
 
