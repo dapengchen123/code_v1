@@ -49,9 +49,9 @@ class iLIDSVIDMOTION(Dataset):
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
-            raise RuntimeError("Downloaded file missing!")
         else:
             print("Please firstly download the files")
+            raise RuntimeError("Downloaded file missing!")
 
         # Extract the file
 
