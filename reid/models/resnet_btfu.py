@@ -1,9 +1,6 @@
+from __future__ import absolute_import
 import torch.nn.functional as F
 import torch.nn.init as init
-from __future__ import absolute_import
-from torch import mean as torchmean
-from ..utils import *
-from ..utils.visualize import*
 from torch import nn
 from torchvision.models import resnet18, resnet34, resnet50, resnet101, \
     resnet152
