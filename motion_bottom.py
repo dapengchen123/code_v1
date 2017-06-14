@@ -54,7 +54,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
             shuffle=True, pin_memory=True)
 
     val_loader = DataLoader(
-        Preprocessor(dataset.val, root=[dataset.images_dir. dataset.motion_dir],
+        Preprocessor(dataset.val, root=[dataset.images_dir, dataset.motion_dir],
                      transform=transforms.Compose([
                          transforms.RectScale(256, 128),
                          transforms.ToTensor(),
@@ -65,7 +65,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
 
     test_loader = DataLoader(
         Preprocessor(list(set(dataset.query) | set(dataset.gallery)),
-                     root=[dataset.images_dir. dataset.motion_dir],
+                     root=[dataset.images_dir, dataset.motion_dir],
                      transform=transforms.Compose([
                          transforms.RectScale(256, 128),
                          transforms.ToTensor(),
