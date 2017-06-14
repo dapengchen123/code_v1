@@ -161,7 +161,7 @@ class iLIDSVIDMOTION(Dataset):
 
         shutil.rmtree(temp_others_dir)
 
-        meta = {'name': 'iLIDS-VID', 'shot': 'single', 'num_cameras': 2,
+        meta = {'name': 'iLIDS-VIDMOTION', 'shot': 'multi-shot', 'num_cameras': 2,
                 'identities': identities_images}
 
         write_json(meta, osp.join(self.root, 'meta.json'))
