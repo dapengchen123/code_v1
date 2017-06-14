@@ -36,7 +36,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
     num_classes = (dataset.num_trainval_ids if combine_trainval
                    else dataset.num_train_ids)
 
-    train_processor = Preprocessor(train_set, root=[dataset.images_dir. dataset.motion_dir] ,
+    train_processor = Preprocessor(train_set, root=[dataset.images_dir, dataset.motion_dir],
                                    transform=transforms.Compose([
                                        transforms.RandomSizedRectCrop(256, 128),
                                        transforms.RandomHorizontalFlip(),
