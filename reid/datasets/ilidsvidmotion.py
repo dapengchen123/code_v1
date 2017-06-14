@@ -1,14 +1,10 @@
 from __future__ import absolute_import
 import os
 import os.path as osp
-
 import numpy as np
-
 from ..utils.data import Dataset
 from ..utils.osutils import mkdir_if_missing
 from ..utils.serialization import write_json
-
-
 
 class iLIDSVIDMOTION(Dataset):
     md5 = '7752bd15b611558701bb0e2380ed8950'
@@ -53,7 +49,7 @@ class iLIDSVIDMOTION(Dataset):
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
-
+            raise RuntimeError("Downloaded file missing!")
         else:
             print("Please firstly download the files")
 
