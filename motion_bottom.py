@@ -12,7 +12,7 @@ from reid.datasets import get_dataset
 from reid.dist_metric import DistanceMetric
 from reid.loss.oim import OIMLoss
 from reid.loss.triplet import TripletLoss
-from reid.models import ResNetbottom
+from reid.models import ResNet_btfu
 from reid.trainers import Trainer
 from reid.evaluators import Evaluator
 from reid.utils.data import transforms
@@ -101,14 +101,14 @@ def main(args):
 
     # Create model
     if args.loss == 'xentropy':
-        model = ResNetbottom(args.depth, pretrained=True,
+        model = ResNet_btfu(args.depth, pretrained=True,
                            num_classes=num_classes,
                            num_features=args.features, dropout=args.dropout)
     elif args.loss == 'oim':
-        model = ResNetbottom(args.depth, pretrained=True, num_features=args.features,
+        model = ResNet_btfu(args.depth, pretrained=True, num_features=args.features,
                            norm=True, dropout=args.dropout)
     elif args.loss == 'triplet':
-        model = ResNetbottom(args.depth, pretrained=True,
+        model = ResNet_btfu(args.depth, pretrained=True,
                            num_features=args.features, dropout=args.dropout)
     else:
         raise ValueError("Cannot recognize loss type:", args.loss)
