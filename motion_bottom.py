@@ -195,22 +195,21 @@ def main(args):
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
 
+        if epoch % 3 == 0:
+            # top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
+            top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+            is_best = top1 > best_top1
+            best_top1 = max(top1, best_top1)
+            save_checkpoint({
+                'state_dict': model.state_dict(),
+                'epoch': epoch + 1,
+                'best_top1': best_top1,
+            }, is_best, fpath=osp.join(args.logs_dir, 'checkpoint.pth.tar'))
 
-    if epoch % 3 == 0:
-        # top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
-        top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
-        is_best = top1 > best_top1
-        best_top1 = max(top1, best_top1)
-        save_checkpoint({
-            'state_dict': model.state_dict(),
-            'epoch': epoch + 1,
-            'best_top1': best_top1,
-        }, is_best, fpath=osp.join(args.logs_dir, 'checkpoint.pth.tar'))
+        print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
+              format(epoch, top1, best_top1, ' *' if is_best else ''))
 
-    print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
-          format(epoch, top1, best_top1, ' *' if is_best else ''))
-
-    # Final test
+        # Final test
 
     print('Test with best model:')
     checkpoint = load_checkpoint(osp.join(args.logs_dir, 'model_best.pth.tar'))
