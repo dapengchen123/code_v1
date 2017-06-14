@@ -5,17 +5,12 @@ from .cuhk03 import CUHK03
 from .dukemtmc import DukeMTMC
 from .market1501 import Market1501
 from .viper import VIPeR
-from .ilidsvid import iLIDSVID
+from .ilidsvidmotion import iLIDSVIDMOTION
 
 
 
 __factory = {
-    'viper': VIPeR,
-    'cuhk01': CUHK01,
-    'cuhk03': CUHK03,
-    'market1501': Market1501,
-    'dukemtmc': DukeMTMC,
-    'ilidsvid': iLIDSVID,
+    'ilidsvidmtion': iLIDSVIDMOTION,
 }
 
 
