@@ -192,6 +192,32 @@ def main(args):
 
     # Starting training
     for epoch in range(args.start_epoch, args.epochs):
+        adjust_lr(epoch)
+        trainer.train(epoch, train_loader, optimizer)
+
+
+    if epoch % 3 == 0:
+        # top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
+        top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+        is_best = top1 > best_top1
+        best_top1 = max(top1, best_top1)
+        save_checkpoint({
+            'state_dict': model.state_dict(),
+            'epoch': epoch + 1,
+            'best_top1': best_top1,
+        }, is_best, fpath=osp.join(args.logs_dir, 'checkpoint.pth.tar'))
+
+    print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
+          format(epoch, top1, best_top1, ' *' if is_best else ''))
+
+    # Final test
+
+    print('Test with best model:')
+    checkpoint = load_checkpoint(osp.join(args.logs_dir, 'model_best.pth.tar'))
+    model.load_state_dict(checkpoint['state_dict'])
+    metric.train(model, train_loader)
+    evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+
 
 
 
@@ -207,7 +233,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="ID Training ResNet Model")
     # data
-    parser.add_argument('-d', '--dataset', type=str, default='cuhk03',
+    parser.add_argument('-d', '--dataset', type=str, default='ilidsvidmotion',
                         choices=['ilidsvidmotion'])
     parser.add_argument('-b', '--batch-size', type=int, default=256)
     parser.add_argument('-j', '--workers', type=int, default=4)
