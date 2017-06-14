@@ -23,7 +23,7 @@ class iLIDSVIDMOTION(Dataset):
 
     @property
     def other_dir(self):
-        return osp.join(self.root, 'other')
+        return osp.join(self.root, 'others')
 
 
     def download(self):
