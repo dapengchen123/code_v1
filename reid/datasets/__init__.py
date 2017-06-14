@@ -10,7 +10,7 @@ from .ilidsvidmotion import iLIDSVIDMOTION
 
 
 __factory = {
-    'ilidsvidmtion': iLIDSVIDMOTION,
+    'ilidsvidmotion': iLIDSVIDMOTION,
 }
 
 
