@@ -45,7 +45,7 @@ class iLIDSVIDMOTION(Dataset):
 
         # Download the raw zip file
         fpath1 = osp.join(raw_dir, 'iLIDS-VID.tar')
-        fpath2 = osp.join(raw_dir, 'Farneback.tar.gz')
+        fpath2 = osp.join(raw_dir, 'Farnebackflow.tar.gz')
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
