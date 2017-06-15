@@ -56,7 +56,7 @@ class iLIDSVIDMOTION(Dataset):
         # Extract the file
 
         exdir1 = osp.join(raw_dir, 'iLIDS-VID')
-        exdir2 = osp.join(raw_dir, 'Farneback')
+        exdir2 = osp.join(raw_dir, 'Farnebackflow')
 
         if not osp.isdir(exdir1):
             print("Extracting tar file")
