@@ -95,7 +95,7 @@ class iLIDSVIDMOTION(Dataset):
 
 
         fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID', 'sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, 'Farneback','*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, 'Farnebackflow','*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]
