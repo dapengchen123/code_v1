@@ -187,6 +187,7 @@ def main(args):
                 args.lr * (0.001 ** (epoch - 100) / 50)
         else:
             raise ValueError("Cannot recognize optimizer type:", args.optimizer)
+        print(lr)
         for g in optimizer.param_groups:
             g['lr'] = lr * g.get('lr_mult', 1)
 
