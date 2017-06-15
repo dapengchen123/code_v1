@@ -181,7 +181,7 @@ def main(args):
 
     def adjust_lr(epoch):
         if args.optimizer == 'sgd':
-            lr = args.lr * (0.1 ** (epoch//30))
+            lr = args.lr * (0.5 ** (epoch//30))
 
         elif args.optimizer == 'adam':
             lr = args.lr if epoch <= 100 else \
