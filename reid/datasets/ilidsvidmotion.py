@@ -45,7 +45,7 @@ class iLIDSVIDMOTION(Dataset):
 
         # Download the raw zip file
         fpath1 = osp.join(raw_dir, 'iLIDS-VID.tar')
-        fpath2 = osp.join(raw_dir, 'gen_optical_flow_1margin.tar')
+        fpath2 = osp.join(raw_dir, 'pyflow.tar')
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
@@ -56,7 +56,7 @@ class iLIDSVIDMOTION(Dataset):
         # Extract the file
 
         exdir1 = osp.join(raw_dir, 'iLIDS-VID')
-        exdir2 = osp.join(raw_dir, 'gen_optical_flow_1margin')
+        exdir2 = osp.join(raw_dir, 'pyflow')
 
         if not osp.isdir(exdir1):
             print("Extracting tar file")
@@ -95,7 +95,7 @@ class iLIDSVIDMOTION(Dataset):
 
 
         fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID', 'sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, 'gen_optical_flow_1margin','*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, 'pyflow','*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]
