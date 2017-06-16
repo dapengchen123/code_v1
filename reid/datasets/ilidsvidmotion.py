@@ -5,7 +5,7 @@ import numpy as np
 from ..utils.data import Dataset
 from ..utils.osutils import mkdir_if_missing
 from ..utils.serialization import write_json
-
+# changed a name
 class iLIDSVIDMOTION(Dataset):
     md5 = '7752bd15b611558701bb0e2380ed8950'
     def __init__(self, root, split_id=0, num_val=0.0, download=False):
@@ -40,12 +40,13 @@ class iLIDSVIDMOTION(Dataset):
         from six.moves import urllib
         import scipy.io as sio
 
+
         raw_dir = osp.join(self.root, 'raw')
         mkdir_if_missing(raw_dir)
 
         # Download the raw zip file
         fpath1 = osp.join(raw_dir, 'iLIDS-VID.tar')
-        fpath2 = osp.join(raw_dir, 'Farneback.tar.gz')
+        fpath2 = osp.join(raw_dir, 'pyflow_edge.tar')
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
@@ -56,12 +57,12 @@ class iLIDSVIDMOTION(Dataset):
         # Extract the file
 
         exdir1 = osp.join(raw_dir, 'iLIDS-VID')
-        exdir2 = osp.join(raw_dir, 'Farneback')
+        exdir2 = osp.join(raw_dir, 'pyflow_edge')
 
         if not osp.isdir(exdir1):
             print("Extracting tar file")
             cwd = os.getcwd()
-            tar = tarfile.open(fpath1, 'r:')
+            tar = tarfile.open(fpath1)
             mkdir_if_missing(exdir1)
             os.chdir(exdir1)
             tar.extractall()
@@ -95,7 +96,7 @@ class iLIDSVIDMOTION(Dataset):
 
 
         fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID', 'sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, 'Farneback','*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, 'pyflow_edge','*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]
