@@ -21,6 +21,7 @@ from reid.utils.data.sampler import RandomIdentitySampler
 from reid.utils.logging import Logger
 from reid.utils.serialization import load_checkpoint, save_checkpoint
 
+# name changed
 
 def get_data(dataset_name, split_id, data_dir, batch_size, workers,
              num_instances, combine_trainval=False):
