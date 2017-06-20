@@ -2,23 +2,30 @@ from __future__ import absolute_import
 import os
 import os.path as osp
 import numpy as np
-from ..utils.data import Dataset
+from ..utils.data import Datasequence
 from ..utils.osutils import mkdir_if_missing
 from ..utils.serialization import write_json
+import tarfile
+from glob import glob
+import shutil
+import scipy.io as sio
 
-class iLIDSVIDSEQUENCE(Dataset):
-    def __init__(self, root, split_id=0, num_val=0.0, download=False):
+datasetname = 'iLIDS-VID'
+flowname = 'Farneback'
+
+
+class iLIDSVIDSEQUENCE(Datasequence):
+
+    def __init__(self, root,  split_id=0, seq_len=12, seq_srd=6, num_val=1, download=False):
         super(iLIDSVIDSEQUENCE, self).__init__(root, split_id=split_id)
 
         if download:
             self.download()
 
         if not self._check_integrity():
-            raise RuntimeError("Dataset not found or corrupted. " +
-                           "You can use download=True to download it.")
+            self.imgextract()
 
-    ## rewrite load sequences
-    #self.load(num_val)
+        self.load(seq_len, seq_srd, num_val)
 
     @property
     def other_dir(self):
@@ -30,16 +37,12 @@ class iLIDSVIDSEQUENCE(Dataset):
             print("Files already downloaded and verified")
             return
 
-        import tarfile
-        from glob import glob
-        import shutil
-        import scipy.io as sio
 
         raw_dir = osp.join(self.root, 'raw')
         mkdir_if_missing(raw_dir)
 
-        fpath1 = osp.join(raw_dir, 'iLIDS-VID.tar')
-        fpath2 = osp.join(raw_dir, 'Farneback.tar.gz')
+        fpath1 = osp.join(raw_dir, datasetname + '.tar')
+        fpath2 = osp.join(raw_dir, flowname + '.tar')
 
         if osp.isfile(fpath1) and osp.isfile(fpath2):
             print("Using the download file:" + fpath1 + " " + fpath2)
@@ -47,13 +50,19 @@ class iLIDSVIDSEQUENCE(Dataset):
             print("Please firstly download the files")
             raise RuntimeError("Downloaded file missing!")
 
-        exdir1 = osp.join(raw_dir, 'iLIDS-VID')
-        exdir2 = osp.join(raw_dir, 'Farneback')
+    def imgextract(self):
+
+
+        raw_dir = osp.join(self.root, 'raw')
+        exdir1 = osp.join(raw_dir, datasetname)
+        exdir2 = osp.join(raw_dir, flowname)
+        fpath1 = osp.join(raw_dir, datasetname + '.tar')
+        fpath2 = osp.join(raw_dir, flowname + '.tar')
 
         if not osp.isdir(exdir1):
             print("Extracting tar file")
             cwd = os.getcwd()
-            tar = tarfile.open(fpath1, 'r:')
+            tar = tarfile.open(fpath1)
             mkdir_if_missing(exdir1)
             os.chdir(exdir1)
             tar.extractall()
@@ -85,8 +94,8 @@ class iLIDSVIDSEQUENCE(Dataset):
         others_dir = osp.join(self.root, 'others')
         mkdir_if_missing(others_dir)
 
-        fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID', 'sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, 'Farneback', '*/*/*.png')))
+        fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID/sequences', '*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, '*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]
@@ -143,3 +152,24 @@ class iLIDSVIDSEQUENCE(Dataset):
                     shutil.copy(osp.join(temp_others_dir, temp_fname), osp.join(others_dir, fname))
 
         shutil.rmtree(temp_others_dir)
+
+        meta = {'name': 'iLIDS-sequence', 'shot': 'sequence', 'num_cameras': 2,
+                'identities': identities_images}
+
+        write_json(meta, osp.join(self.root, 'meta.json'))
+
+        # Consider fixed training and testing split
+        splitmat_name = osp.join(exdir1, 'train-test people splits', 'train_test_splits_ilidsvid.mat')
+        data = sio.loadmat(splitmat_name)
+        person_list = data['ls_set']
+        num = len(identities_images)
+        splits = []
+        for i in range(10):
+            pids = (person_list[i] - 1).tolist()
+            trainval_pids = sorted(pids[:num // 2])
+            test_pids = sorted(pids[num // 2:])
+            split = {'trainval': trainval_pids,
+                     'query': test_pids,
+                     'gallery': test_pids}
+            splits.append(split)
+        write_json(splits, osp.join(self.root, 'splits.json'))
