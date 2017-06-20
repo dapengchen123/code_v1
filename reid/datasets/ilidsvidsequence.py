@@ -143,3 +143,24 @@ class iLIDSVIDSEQUENCE(Dataset):
                     shutil.copy(osp.join(temp_others_dir, temp_fname), osp.join(others_dir, fname))
 
         shutil.rmtree(temp_others_dir)
+
+        meta = {'name': 'iLIDS-sequence', 'shot': 'sequence', 'num_cameras': 2,
+                'identities': identities_images}
+
+        write_json(meta, osp.join(self.root, 'meta.json'))
+
+        # Consider fixed training and testing split
+        splitmat_name = osp.join(exdir1, 'train-test people splits', 'train_test_splits_ilidsvid.mat')
+        data = sio.loadmat(splitmat_name)
+        person_list = data['ls_set']
+        num = len(identities_images)
+        splits = []
+        for i in range(10):
+            pids = (person_list[i] - 1).tolist()
+            trainval_pids = sorted(pids[:num // 2])
+            test_pids = sorted(pids[num // 2:])
+            split = {'trainval': trainval_pids,
+                     'query': test_pids,
+                     'gallery': test_pids}
+            splits.append(split)
+        write_json(splits, osp.join(self.root, 'splits.json'))
