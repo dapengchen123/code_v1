@@ -5,6 +5,10 @@ import numpy as np
 from ..utils.data import Dataset
 from ..utils.osutils import mkdir_if_missing
 from ..utils.serialization import write_json
+import tarfile
+from glob import glob
+import shutil
+import scipy.io as sio
 
 class iLIDSVIDMOTION(Dataset):
     md5 = '7752bd15b611558701bb0e2380ed8950'
@@ -32,13 +36,6 @@ class iLIDSVIDMOTION(Dataset):
             print("Files already downloaded and verified")
             return
 
-        import hashlib
-        import tarfile
-        from glob import glob
-        import shutil
-        from scipy.misc import imsave, imread
-        from six.moves import urllib
-        import scipy.io as sio
 
         raw_dir = osp.join(self.root, 'raw')
         mkdir_if_missing(raw_dir)

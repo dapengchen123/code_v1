@@ -5,13 +5,18 @@ import numpy as np
 from ..utils.data import Datasequence
 from ..utils.osutils import mkdir_if_missing
 from ..utils.serialization import write_json
+import tarfile
+from glob import glob
+import shutil
+import scipy.io as sio
+
 datasetname = 'iLIDS-VID'
 flowname = 'Farneback'
 
 
 class iLIDSVIDSEQUENCE(Datasequence):
 
-    def __init__(self, root,  split_id=0, seq_len=12, seq_srd =6, num_val=0.0, download=False):
+    def __init__(self, root,  split_id=0, seq_len=12, seq_srd=6, num_val=1, download=False):
         super(iLIDSVIDSEQUENCE, self).__init__(root, split_id=split_id)
 
         if download:
@@ -47,10 +52,7 @@ class iLIDSVIDSEQUENCE(Datasequence):
 
     def imgextract(self):
 
-        import tarfile
-        from glob import glob
-        import shutil
-        import scipy.io as sio
+
         raw_dir = osp.join(self.root, 'raw')
         exdir1 = osp.join(raw_dir, datasetname)
         exdir2 = osp.join(raw_dir, flowname)
@@ -60,7 +62,7 @@ class iLIDSVIDSEQUENCE(Datasequence):
         if not osp.isdir(exdir1):
             print("Extracting tar file")
             cwd = os.getcwd()
-            tar = tarfile.open(fpath1, 'r:')
+            tar = tarfile.open(fpath1)
             mkdir_if_missing(exdir1)
             os.chdir(exdir1)
             tar.extractall()
@@ -92,8 +94,8 @@ class iLIDSVIDSEQUENCE(Datasequence):
         others_dir = osp.join(self.root, 'others')
         mkdir_if_missing(others_dir)
 
-        fpaths1 = sorted(glob(osp.join(exdir1, datasetname, 'sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, flowname, '*/*/*.png')))
+        fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID/sequences', '*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, '*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]

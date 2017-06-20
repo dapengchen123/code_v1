@@ -71,7 +71,7 @@ class Datasequence(object):
 
         if verbose:
             print(self.__class__.__name__, "dataset loaded")
-            print("  subset   | # ids | # images")
+            print("  subset   | # ids | # sequences")
             print("  ---------------------------")
             print("  train    | {:5d} | {:8d}"
                   .format(self.num_train_ids, len(self.train)))
