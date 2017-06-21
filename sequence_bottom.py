@@ -24,13 +24,16 @@ from reid.utils.serialization import load_checkpoint, save_checkpoint
 
 
 def get_data(dataset_name, split_id, data_dir, batch_size, seq_len, seq_srd, workers,
-             num_instances, combine_trainval=False):
+             num_instances, combine_trainval=True):
 
     root = osp.join(data_dir, dataset_name)
 
     dataset = get_sequence(dataset_name, root, split_id=split_id,
                            seq_len= seq_len, seq_srd=seq_srd, num_val=1, download=True)
-    
+
+    train_set = dataset.trainval if combine_trainval else dataset.train
+    num_classes = (dataset.num_trainval_ids if combine_trainval
+                   else dataset.num_train_ids)
 
     return dataset
 
