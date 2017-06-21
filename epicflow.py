@@ -35,11 +35,11 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
     train_set = dataset.trainval if combine_trainval else dataset.train
     num_classes = (dataset.num_trainval_ids if combine_trainval
                    else dataset.num_train_ids)
-
+    #transforms.RandomSizedRectCrop(256, 128),
+    #transforms.RandomHorizontalFlip(),
     train_processor = Preprocessor(train_set, root=[dataset.images_dir, dataset.other_dir],
                                    transform=transforms.Compose([
-                                       transforms.RandomSizedRectCrop(256, 128),
-                                       transforms.RandomHorizontalFlip(),
+                                       transforms.RectScale(256, 128),
                                        transforms.ToTensor(),
                                        normalizer,
                                    ]))
