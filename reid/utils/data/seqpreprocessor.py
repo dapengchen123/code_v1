@@ -4,6 +4,10 @@ import torch
 
 from PIL import Image
 
+
+
+
+
 class SeqPreprocessor(object):
     def __init__(self, seqset, dataset, transform=None):
         super(SeqPreprocessor, self).__init__()
@@ -28,34 +32,41 @@ class SeqPreprocessor(object):
         start_ind, end_ind, pid, camid = self.seqset[index]
 
         if len(self.root)==1:
-             fname = self.identities[pid][camid][start_ind]
-             fpath_img = osp.join(self.root[0], fname)
-             imgrgb = Image.open(fpath_img).convert('RGB')
-
+            seq = []
+            for ind in range(start_ind, end_ind):
+                imgseq = []
+                fname = self.identities[pid][camid][ind]
+                fpath_img = osp.join(self.root[0], fname)
+                imgrgb = Image.open(fpath_img).convert('RGB')
+                imgseq.append(imgrgb)
+                seq = [imgseq]
 
 
         elif len(self.root)==2:
-            imgs = []
-            flows = []
+            imgseq = []
+            flowseq = []
             for ind in range(start_ind,end_ind):
                 fname = self.identities[pid][camid][ind]
                 fpath_img = osp.join(self.root[0], fname)
                 imgrgb = Image.open(fpath_img).convert('RGB')
                 fpath_flow = osp.join(self.root[1], fname)
                 flowrgb = Image.open(fpath_flow).convert('RGB')
-                imgs.append(imgrgb)
-                flows.append(flowrgb)
-
-
-
-
+                imgseq.append(imgrgb)
+                flowseq.append(flowrgb)
+                seq = [imgseq, flowseq]
 
         else:
             raise RuntimeError("The root is not validate")
 
+        #
+        if self.transform is not None:
+            seq = self.transform(seq)
+
+        img_tensor = seq[:, 0]
+        flow_tensor = seq[:, 1]
 
 
-        return 1
+        return seq
 
 
 

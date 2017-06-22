@@ -36,9 +36,9 @@ def get_data(dataset_name, split_id, data_dir, batch_size, seq_len, seq_srd, wor
                    else dataset.num_train_ids)
 
     normalizer = seqtransforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                      std=[0.229, 0.224, 0.225])
+                                       std=[0.229, 0.224, 0.225])
 
-    train_processor = SeqPreprocessor(train_set, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
+    train_processor = SeqPreprocessor(train_set, dataset, transform=seqtransforms.Compose([seqtransforms.RandomSizedRectCrop(256, 128), seqtransforms.RandomHorizontalFlip(),
                                     seqtransforms.ToTensor(), normalizer]))
 
     val_processor = SeqPreprocessor(dataset.val, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
@@ -46,7 +46,6 @@ def get_data(dataset_name, split_id, data_dir, batch_size, seq_len, seq_srd, wor
 
     test_processor = SeqPreprocessor(list(set(dataset.query) | set(dataset.gallery)), dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
                                        seqtransforms.ToTensor(), normalizer]))
-
     train_loader = DataLoader(
         train_processor, batch_size=batch_size, num_workers=workers, shuffle=True,
         pin_memory=True)
