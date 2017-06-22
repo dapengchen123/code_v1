@@ -62,11 +62,11 @@ class SeqPreprocessor(object):
         if self.transform is not None:
             seq = self.transform(seq)
 
-        img_tensor = seq[:, 0]
-        flow_tensor = seq[:, 1]
+        img_tensor = torch.stack(seq[0], 0)
+        flow_tensor = torch.stack(seq[1], 0)
 
 
-        return seq
+        return img_tensor, flow_tensor, pid, camid, start_ind, end_ind
 
 
 

@@ -86,8 +86,12 @@ def main(args):
                  combine_trainval=args.combine_trainval)
 
     # Create model
+    # model =
+    # TODO
+
+
     for i, input in enumerate(train_loader):
-        a = input
+        a = 0
 
 
 

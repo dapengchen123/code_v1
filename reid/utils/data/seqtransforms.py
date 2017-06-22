@@ -104,8 +104,7 @@ class RandomHorizontalFlip(object):
             new_seqs = [[[] for _ in range(framelen)] for _ in range(modallen)]
             for modal_ind, modal in enumerate(seqs):
                 for frame_ind, frame in enumerate(modal):
-                # todo  
-                    new_seqs[frame_ind][modal_ind] = modal.transpose(Image.FLIP_LEFT_RIGHT)
+                    new_seqs[modal_ind][frame_ind] = frame.transpose(Image.FLIP_LEFT_RIGHT)
             return new_seqs
         return seqs
 
@@ -113,9 +112,9 @@ class RandomHorizontalFlip(object):
 class ToTensor(object):
 
     def __call__(self, seqs):
-        framelen = len(seqs)
-        modallen = len(seqs[0])
-        new_seqs = [[[] for _ in range(modallen)] for _ in range(framelen)]
+        modallen = len(seqs)
+        framelen = len(seqs[0])
+        new_seqs = [[[] for _ in range(framelen)] for _ in range(modallen)]
         pic = seqs[0][0]
 
         # PIL image mode: 1, L, P, I, F, RGB, YCbCr, RGBA, CMYK
@@ -127,25 +126,25 @@ class ToTensor(object):
             nchannel = len(pic.mode)
 
         if pic.mode =='I':
-            for frame_ind, frame in enumerate(seqs):
-                for modal_ind, modal in enumerate(frame):
-                    img = torch.from_numpy(np.array(modal, np.int32, copy=False))
+            for modal_ind, modal in enumerate(seqs):
+                for frame_ind, frame in enumerate(modal):
+                    img = torch.from_numpy(np.array(frame, np.int32, copy=False))
                     img = img.view(pic.size[1], pic.size[0], nchannel)
-                    new_seqs[frame_ind][modal_ind] = img.transpose(0, 1).transpose(0, 2).contiguous()
+                    new_seqs[modal_ind][frame_ind] = img.transpose(0, 1).transpose(0, 2).contiguous()
 
         elif pic.mode == 'I;16':
-            for frame_ind, frame in enumerate(seqs):
-                for modal_ind, modal in enumerate(frame):
-                    img = torch.from_numpy(np.array(modal, np.int16, copy=False))
+            for modal_ind, modal in enumerate(seqs):
+                for frame_ind, frame in enumerate(modal):
+                    img = torch.from_numpy(np.array(frame, np.int16, copy=False))
                     img = img.view(pic.size[1], pic.size[0], nchannel)
-                    new_seqs[frame_ind][modal_ind] = img.transpose(0, 1).transpose(0, 2).contiguous()
+                    new_seqs[modal_ind][frame_ind] = img.transpose(0, 1).transpose(0, 2).contiguous()
         else:
-            for frame_ind, frame in enumerate(seqs):
-                for modal_ind, modal in enumerate(frame):
-                    img = torch.ByteTensor(torch.ByteStorage.from_buffer(modal.tobytes()))
+            for modal_ind, modal in enumerate(seqs):
+                for frame_ind, frame in enumerate(modal):
+                    img = torch.ByteTensor(torch.ByteStorage.from_buffer(frame.tobytes()))
                     img = img.view(pic.size[1], pic.size[0], nchannel)
                     img = img.transpose(0, 1).transpose(0, 2).contiguous()
-                    new_seqs[frame_ind][modal_ind] = img.float().div(255)
+                    new_seqs[modal_ind][frame_ind] = img.float().div(255)
 
 
         return new_seqs
@@ -163,15 +162,15 @@ class Normalize(object):
 
     def __call__(self, seqs):
         # TODO: make efficient
-        framelen = len(seqs)
-        modallen = len(seqs[0])
-        new_seqs = [[[] for _ in range(modallen)] for _ in range(framelen)]
+        modallen = len(seqs)
+        framelen = len(seqs[0])
+        new_seqs = [[[] for _ in range(framelen)] for _ in range(modallen)]
 
-        for frame_ind, frame in enumerate(seqs):
-            for modal_ind, modal in enumerate(frame):
-                for t, m, s in zip(modal, self.mean, self.std):
-                    new_seqs[frame_ind][modal_ind] = t.sub_(m).div_(s)
-
+        for modal_ind, modal in enumerate(seqs):
+            for frame_ind, frame in enumerate(modal):
+                for t, m, s in zip(frame, self.mean, self.std):
+                    t.sub_(m).div_(s)
+                    new_seqs[modal_ind][frame_ind] = frame
 
         return new_seqs
 
