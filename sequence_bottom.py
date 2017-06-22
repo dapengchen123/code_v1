@@ -15,8 +15,8 @@ from reid.loss.triplet import TripletLoss
 from reid.models import ResNet_btfu
 from reid.trainers import Trainer
 from reid.evaluators import Evaluator
-from reid.utils.data import transforms
-from reid.utils.data.preprocessor import Preprocessor
+from reid.utils.data import seqtransforms
+from reid.utils.data.seqpreprocessor import SeqPreprocessor
 from reid.utils.data.sampler import RandomIdentitySampler
 from reid.utils.logging import Logger
 from reid.utils.serialization import load_checkpoint, save_checkpoint
@@ -35,7 +35,32 @@ def get_data(dataset_name, split_id, data_dir, batch_size, seq_len, seq_srd, wor
     num_classes = (dataset.num_trainval_ids if combine_trainval
                    else dataset.num_train_ids)
 
-    return dataset
+    normalizer = seqtransforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                      std=[0.229, 0.224, 0.225])
+
+    train_processor = SeqPreprocessor(train_set, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
+                                    seqtransforms.ToTensor(), normalizer]))
+
+    val_processor = SeqPreprocessor(dataset.val, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
+                                       seqtransforms.ToTensor(), normalizer]))
+
+    test_processor = SeqPreprocessor(list(set(dataset.query) | set(dataset.gallery)), dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
+                                       seqtransforms.ToTensor(), normalizer]))
+
+    train_loader = DataLoader(
+        train_processor, batch_size=batch_size, num_workers=workers, shuffle=True,
+        pin_memory=True)
+
+    val_loader = DataLoader(
+        val_processor, batch_size=batch_size, num_workers=workers, shuffle=False,
+        pin_memory=True)
+
+    test_loader = DataLoader(
+        test_processor, batch_size=batch_size, num_workers=workers, shuffle= False,
+        pin_memory=True)
+
+    return dataset, num_classes, train_loader, val_loader, test_loader
+
 
 def main(args):
     np.random.seed(args.seed)
@@ -55,10 +80,21 @@ def main(args):
         assert args.batch_size % args.num_instances == 0, \
             'num_instances should divide batch_size'
 
+    dataset, num_classes, train_loader, val_loader, test_loader = \
+        get_data(args.dataset, args.split, args.data_dir,
+             args.batch_size, args.seq_len, args.seq_srd,
+                 args.workers, args.num_instances,
+                 combine_trainval=args.combine_trainval)
 
-    dataset = get_data(args.dataset, args.split, args.data_dir,
-                 args.batch_size, args.seq_len, args.seq_srd,
-                           args.workers, args.num_instances, combine_trainval=args.combine_trainval)
+    # Create model
+    for i, input in enumerate(train_loader):
+        a = input
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
