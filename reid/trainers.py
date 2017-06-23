@@ -70,6 +70,7 @@ class Trainer(BaseTrainer):
         return inputs, targets
 
     def _forward(self, inputs, targets):
+        ## input can be multiple input data
         outputs = self.model(*inputs)
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
             loss = self.criterion(outputs, targets)
@@ -84,3 +85,15 @@ class Trainer(BaseTrainer):
         else:
             raise ValueError("Unsupported loss:", self.criterion)
         return loss, prec
+
+
+class SeqTrainer(BaseTrainer):
+    def _parse_data(self, inputs):
+        imgs, flows, pid, camid, _, _ = inputs
+        inputs = [Variable(imgs), Variable(flows)]
+
+
+
+
+
+
