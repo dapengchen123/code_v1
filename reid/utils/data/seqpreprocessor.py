@@ -63,8 +63,11 @@ class SeqPreprocessor(object):
             seq = self.transform(seq)
 
         img_tensor = torch.stack(seq[0], 0)
-        flow_tensor = torch.stack(seq[1], 0)
 
+        if len(self.root) == 2:
+            flow_tensor = torch.stack(seq[1], 0)
+        else:
+            flow_tensor = None
 
         return img_tensor, flow_tensor, pid, camid, start_ind, end_ind
 
