@@ -9,6 +9,20 @@ from .feature_extraction import extract_cnn_feature
 from .utils.meters import AverageMeter
 
 
+def extract_seqfeature(model, data_loader, print_freq=100, Metric=None):
+    model.eval()
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+
+    features = OrderedDict()
+    labels = OrderedDict()
+
+    end = time.time()
+
+
+
+
+
 
 def extract_features(model, data_loader, print_freq=100, metric=None):
     model.eval()
@@ -173,14 +187,37 @@ class Evaluator(object):
         self.model = model
 
 
-    def evaluate(self, data_loader, query, gallery, metric=None, multi_shot=False):
-        features, _ = extract_features(self.model, data_loader)
-        distmat = pairwise_distance(features, query, gallery, metric=metric)
-        if multi_shot:
+    # def evaluate(self, data_loader, query, gallery, metric=None, multi_shot=False):
+    #     features, _ = extract_features(self.model, data_loader)
+    #     distmat = pairwise_distance(features, query, gallery, metric=metric)
+    #     if multi_shot:
+    #
+    #         return evaluate_multi(distmat, query=query, gallery=gallery)
+    #     else:
+    #         return evaluate_all(distmat, query=query, gallery=gallery)
 
-            return evaluate_multi(distmat, query=query, gallery=gallery)
-        else:
+    def evaluate(self, data_loader, query, gallery, metric=None, mode="sequence"):
+
+        if mode == "single_shot":
+            features, _ = extract_features(self.model, data_loader)
+            distmat = pairwise_distance(features, query, gallery, metric=metric)
             return evaluate_all(distmat, query=query, gallery=gallery)
+        elif mode == "multi_shot":
+            features, _ = extract_features(self.model, data_loader)
+            distmat = pairwise_distance(features, query, gallery, metric=metric)
+            return evaluate_multi(distmat, query=query, gallery=gallery)
+        elif mode == "sequence":
+
+
+        else:
+            raise RuntimeError("the mode of evaluation is not defined")
+
+
+
+
+
+
+
 
 
 
