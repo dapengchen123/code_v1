@@ -13,7 +13,7 @@ def _pluckseq(identities, indices, seq_len, seq_str):
             seq_inds = [(start_ind, start_ind + seq_len) \
                         for start_ind in range(0, seqall-seq_len, seq_str)]
             for seq_ind in seq_inds:
-                ret.append((seq_ind[0], seq_ind[1], pid, camid))
+                ret.append((seq_ind[0], seq_ind[1], pid, index, camid))
     return ret
 
 

@@ -29,7 +29,7 @@ class SeqPreprocessor(object):
 
     def _get_single_item(self, index):
 
-        start_ind, end_ind, pid, camid = self.seqset[index]
+        start_ind, end_ind, pid, label, camid = self.seqset[index]
 
         if len(self.root)==1:
             seq = []
@@ -45,7 +45,7 @@ class SeqPreprocessor(object):
         elif len(self.root)==2:
             imgseq = []
             flowseq = []
-            for ind in range(start_ind,end_ind):
+            for ind in range(start_ind, end_ind):
                 fname = self.identities[pid][camid][ind]
                 fpath_img = osp.join(self.root[0], fname)
                 imgrgb = Image.open(fpath_img).convert('RGB')
@@ -69,7 +69,7 @@ class SeqPreprocessor(object):
         else:
             flow_tensor = None
 
-        return img_tensor, flow_tensor, pid, camid, start_ind, end_ind
+        return img_tensor, flow_tensor, label, camid, start_ind, end_ind
 
 
 

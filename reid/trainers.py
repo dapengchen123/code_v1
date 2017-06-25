@@ -4,9 +4,14 @@ import time
 import torch
 from torch.autograd import Variable
 
+
 from .evaluation_metrics import accuracy
 from .loss import OIMLoss, TripletLoss
 from .utils.meters import AverageMeter
+
+
+
+
 
 
 class BaseTrainer(object):
@@ -15,7 +20,7 @@ class BaseTrainer(object):
         self.model = model
         self.criterion = criterion
 
-    def train(self, epoch, data_loader, optimizer, print_freq=50):
+    def train(self, epoch, data_loader, optimizer, print_freq=10):
         self.model.train()
 
         batch_time = AverageMeter()
@@ -26,8 +31,8 @@ class BaseTrainer(object):
         end = time.time()
 
         for i, inputs in enumerate(data_loader):
-            if inputs[3].size()[0] < data_loader.batch_size/2:
-                print(inputs[3].size()[0])
+            if inputs[2].size()[0] < data_loader.batch_size/2:
+                print("too less batch {}".format(inputs[3].size()[0]))
                 continue
 
             data_time.update(time.time() - end)
@@ -66,7 +71,7 @@ class Trainer(BaseTrainer):
     def _parse_data(self, inputs):
         imgs, _, pids, _ = inputs
         inputs = [Variable(imgs)]
-        targets = Variable(pids.cuda())
+        targets = Variable(pids).cuda()
         return inputs, targets
 
     def _forward(self, inputs, targets):
@@ -87,10 +92,36 @@ class Trainer(BaseTrainer):
         return loss, prec
 
 
+
 class SeqTrainer(BaseTrainer):
     def _parse_data(self, inputs):
-        imgs, flows, pid, camid, _, _ = inputs
+        imgs, flows, pids, camid, _, _ = inputs
         inputs = [Variable(imgs), Variable(flows)]
+        targets = Variable(pids).cuda()
+        return inputs, targets
+
+    def _forward(self, inputs, targets):
+        ## input can be multiple input data
+        outputs = self.model(*inputs)
+        if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
+            loss = self.criterion(outputs, targets)
+            prec, = accuracy(outputs.data, targets.data)
+            prec = prec[0]
+        elif isinstance(self.criterion, OIMLoss):
+            loss, outputs = self.criterion(outputs, targets)
+            prec, = accuracy(outputs.data, targets.data)
+            prec = prec[0]
+        elif isinstance(self.criterion, TripletLoss):
+            loss, prec = self.criterion(outputs, targets)
+        else:
+            raise ValueError("Unsupported loss:", self.criterion)
+
+        return loss, prec
+
+
+
+
+
 
 
 
