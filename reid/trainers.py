@@ -26,9 +26,9 @@ class BaseTrainer(object):
         end = time.time()
 
         for i, inputs in enumerate(data_loader):
-            #if inputs[3].size()[0] < data_loader.batch_size/2:
-            #    print(inputs[3].size()[0])
-            #    continue
+            if inputs[3].size()[0] < data_loader.batch_size/2:
+                print(inputs[3].size()[0])
+                continue
 
             data_time.update(time.time() - end)
             inputs, targets = self._parse_data(inputs)
@@ -70,6 +70,7 @@ class Trainer(BaseTrainer):
         return inputs, targets
 
     def _forward(self, inputs, targets):
+        ## input can be multiple input data
         outputs = self.model(*inputs)
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
             loss = self.criterion(outputs, targets)
@@ -84,3 +85,15 @@ class Trainer(BaseTrainer):
         else:
             raise ValueError("Unsupported loss:", self.criterion)
         return loss, prec
+
+
+class SeqTrainer(BaseTrainer):
+    def _parse_data(self, inputs):
+        imgs, flows, pid, camid, _, _ = inputs
+        inputs = [Variable(imgs), Variable(flows)]
+
+
+
+
+
+

@@ -1,22 +1,12 @@
 from __future__ import absolute_import
 
-from .cuhk01 import CUHK01
-from .cuhk03 import CUHK03
-from .dukemtmc import DukeMTMC
-from .market1501 import Market1501
-from .viper import VIPeR
-from .ilidsvid import iLIDSVID
-
-
-
-__factory = {
-    'viper': VIPeR,
-    'cuhk01': CUHK01,
-    'cuhk03': CUHK03,
-    'market1501': Market1501,
-    'dukemtmc': DukeMTMC,
-    'ilidsvid': iLIDSVID,
-}
+# from .cuhk01 import CUHK01
+# from .cuhk03 import CUHK03
+# from .dukemtmc import DukeMTMC
+# from .market1501 import Market1501
+# from .viper import VIPeR
+from .ilidsvidmotion import iLIDSVIDMOTION
+from .ilidsvidsequence import iLIDSVIDSEQUENCE
 
 
 def get_dataset(name, root, *args, **kwargs):
@@ -39,6 +29,25 @@ def get_dataset(name, root, *args, **kwargs):
     download : bool, optional
         If True, will download the dataset. Default: False
     """
+    __factory = {
+        'ilidsvidmotion': iLIDSVIDMOTION,
+    }
+
     if name not in __factory:
         raise KeyError("Unknown dataset:", name)
     return __factory[name](root, *args, **kwargs)
+
+
+def get_sequence(name, root, *args, **kwargs):
+    __factory = {
+        'ilidsvidsequence': iLIDSVIDSEQUENCE,
+    }
+
+    if name not in __factory:
+        raise KeyError("Unknown dataset", name)
+    return __factory[name](root, *args, **kwargs)
+
+
+
+
+

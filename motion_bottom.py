@@ -12,7 +12,7 @@ from reid.datasets import get_dataset
 from reid.dist_metric import DistanceMetric
 from reid.loss.oim import OIMLoss
 from reid.loss.triplet import TripletLoss
-from reid.models import ResNet
+from reid.models import ResNet_btfu
 from reid.trainers import Trainer
 from reid.evaluators import Evaluator
 from reid.utils.data import transforms
@@ -20,7 +20,7 @@ from reid.utils.data.preprocessor import Preprocessor
 from reid.utils.data.sampler import RandomIdentitySampler
 from reid.utils.logging import Logger
 from reid.utils.serialization import load_checkpoint, save_checkpoint
-from reid.utils import to_numpy
+
 
 def get_data(dataset_name, split_id, data_dir, batch_size, workers,
              num_instances, combine_trainval=False):
@@ -36,7 +36,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
     num_classes = (dataset.num_trainval_ids if combine_trainval
                    else dataset.num_train_ids)
 
-    train_processor = Preprocessor(train_set, root=dataset.images_dir,
+    train_processor = Preprocessor(train_set, root=[dataset.images_dir, dataset.other_dir],
                                    transform=transforms.Compose([
                                        transforms.RandomSizedRectCrop(256, 128),
                                        transforms.RandomHorizontalFlip(),
@@ -54,7 +54,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
             shuffle=True, pin_memory=True)
 
     val_loader = DataLoader(
-        Preprocessor(dataset.val, root=dataset.images_dir,
+        Preprocessor(dataset.val, root=[dataset.images_dir, dataset.other_dir],
                      transform=transforms.Compose([
                          transforms.RectScale(256, 128),
                          transforms.ToTensor(),
@@ -65,7 +65,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
 
     test_loader = DataLoader(
         Preprocessor(list(set(dataset.query) | set(dataset.gallery)),
-                     root=dataset.images_dir,
+                     root=[dataset.images_dir, dataset.other_dir],
                      transform=transforms.Compose([
                          transforms.RectScale(256, 128),
                          transforms.ToTensor(),
@@ -75,6 +75,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, workers,
         shuffle=False, pin_memory=True)
 
     return dataset, num_classes, train_loader, val_loader, test_loader
+
 
 def main(args):
     np.random.seed(args.seed)
@@ -100,18 +101,19 @@ def main(args):
 
     # Create model
     if args.loss == 'xentropy':
-        model = ResNet(args.depth, pretrained=True,
-                       num_classes=num_classes,
-                       num_features=args.features, dropout=args.dropout)
+        model = ResNet_btfu(args.depth, pretrained=True,
+                           num_classes=num_classes,
+                           num_features=args.features, dropout=args.dropout)
     elif args.loss == 'oim':
-        model = ResNet(args.depth, pretrained=True, num_features=args.features,
-                       norm=True, dropout=args.dropout)
+        model = ResNet_btfu(args.depth, pretrained=True, num_features=args.features,
+                           norm=True, dropout=args.dropout)
     elif args.loss == 'triplet':
-        model = ResNet(args.depth, pretrained=True,
-                       num_features=args.features, dropout=args.dropout)
+        model = ResNet_btfu(args.depth, pretrained=True,
+                           num_features=args.features, dropout=args.dropout)
     else:
         raise ValueError("Cannot recognize loss type:", args.loss)
     model = torch.nn.DataParallel(model).cuda()
+
 
 
     # Load from checkpoint
@@ -125,6 +127,7 @@ def main(args):
     else:
         best_top1 = 0
 
+
     # Distance metric
     metric = DistanceMetric(algorithm=args.dist_metric)
 
@@ -135,6 +138,7 @@ def main(args):
         print("Test:")
         evaluator.evaluate(test_loader, dataset.query, dataset.gallery, metric)
         return
+
 
     # Criterion
     if args.loss == 'xentropy':
@@ -147,7 +151,6 @@ def main(args):
     else:
         raise ValueError("Cannot recognize loss type:", args.loss)
     criterion.cuda()
-
 
     # Optimizer
     if args.optimizer == 'sgd':
@@ -171,6 +174,7 @@ def main(args):
         raise ValueError("Cannot recognize optimizer type:", args.optimizer)
 
     # Trainer
+
     trainer = Trainer(model, criterion)
 
     # Schedule learning rate
@@ -186,15 +190,13 @@ def main(args):
         for g in optimizer.param_groups:
             g['lr'] = lr * g.get('lr_mult', 1)
 
-    # Start training
+    # Starting training
     for epoch in range(args.start_epoch, args.epochs):
-
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
 
         if epoch % 3 == 0:
-            print("we start testing")
-            #top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
+            # top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
             top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
             is_best = top1 > best_top1
             best_top1 = max(top1, best_top1)
@@ -206,20 +208,32 @@ def main(args):
 
         print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
               format(epoch, top1, best_top1, ' *' if is_best else ''))
-    # Final test
+
+        # Final test
+
     print('Test with best model:')
     checkpoint = load_checkpoint(osp.join(args.logs_dir, 'model_best.pth.tar'))
     model.load_state_dict(checkpoint['state_dict'])
     metric.train(model, train_loader)
-    top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+    evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="ID Training ResNet Model")
     # data
-    parser.add_argument('-d', '--dataset', type=str, default='cuhk03',
-                        choices=['cuhk03', 'market1501', 'viper', 'dukemtmc', 'ilidsvid'])
+    parser.add_argument('-d', '--dataset', type=str, default='ilidsvidmotion',
+                        choices=['ilidsvidmotion'])
     parser.add_argument('-b', '--batch-size', type=int, default=256)
     parser.add_argument('-j', '--workers', type=int, default=4)
     parser.add_argument('--split', type=int, default=0)

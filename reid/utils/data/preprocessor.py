@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import os.path as osp
+import torch
 
 from PIL import Image
 
@@ -21,10 +22,19 @@ class Preprocessor(object):
 
     def _get_single_item(self, index):
         fname, pid, camid = self.dataset[index]
-        fpath = fname
         if self.root is not None:
-            fpath = osp.join(self.root, fname)
-        img = Image.open(fpath).convert('RGB')
-        if self.transform is not None:
-            img = self.transform(img)
+            fpath_img = osp.join(self.root[0], fname)
+            fpath_flow = osp.join(self.root[1], fname)
+            imgrgb = Image.open(fpath_img).convert('RGB')
+            flowrgb = Image.open(fpath_flow).convert('RGB')
+
+            if self.transform is not None:
+                imgrgb = self.transform(imgrgb)
+                flowrgb = self.transform(flowrgb)
+                img = torch.cat([imgrgb, flowrgb[1:3]], 0)
+            else:
+                raise RuntimeError("transformation should be given")
+        else:
+            raise RuntimeError("root should be given")
+
         return img, fname, pid, camid
