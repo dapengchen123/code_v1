@@ -40,7 +40,7 @@ def get_data(dataset_name, split_id, data_dir, batch_size, seq_len, seq_srd, wor
                                        std=[0.229, 0.224, 0.225])
 
 
-    train_processor = SeqPreprocessor(train_set, dataset, transform=seqtransforms.Compose([seqtransforms.RandomSizedRectCrop(256, 128), seqtransforms.RandomHorizontalFlip(),
+    train_processor = SeqPreprocessor(train_set, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128), seqtransforms.RandomHorizontalFlip(),
                                     seqtransforms.ToTensor(), normalizer]))
 
     val_processor = SeqPreprocessor(dataset.val, dataset, transform=seqtransforms.Compose([seqtransforms.RectScale(256, 128),
