@@ -19,6 +19,9 @@ def extract_seqfeature(model, data_loader, print_freq=100, Metric=None):
 
     end = time.time()
 
+    for i, (imgs, flows, pids, camid) in enumerate(data_loader):
+        data_time.update(time.time() - end)
+
 
 
 

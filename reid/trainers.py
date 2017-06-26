@@ -95,7 +95,7 @@ class Trainer(BaseTrainer):
 
 class SeqTrainer(BaseTrainer):
     def _parse_data(self, inputs):
-        imgs, flows, pids, camid, _, _ = inputs
+        imgs, flows, pids, camid = inputs
         inputs = [Variable(imgs), Variable(flows)]
         targets = Variable(pids).cuda()
         return inputs, targets
