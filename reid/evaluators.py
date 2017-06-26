@@ -5,26 +5,43 @@ from collections import OrderedDict
 import torch
 
 from .evaluation_metrics import cmc, mean_ap, avepool_dismat
-from .feature_extraction import extract_cnn_feature
+from .feature_extraction import extract_cnn_feature, extract_cnn_seqfeature
 from .utils.meters import AverageMeter
+from .utils import to_numpy
 
 
 def extract_seqfeature(model, data_loader, print_freq=100, Metric=None):
     model.eval()
     batch_time = AverageMeter()
     data_time = AverageMeter()
-
-    features = OrderedDict()
-    labels = OrderedDict()
-
     end = time.time()
-
+    allfeatures = 0
+    allpids = 0
+    allcamid = 0
     for i, (imgs, flows, pids, camid) in enumerate(data_loader):
         data_time.update(time.time() - end)
+        outputs = extract_cnn_seqfeature(model, imgs, flows)
+        if i == 0:
+            allfeatures = outputs
+            allpids = pids
+            allcamid = camid
+        else:
+            allfeatures = torch.cat((allfeatures, outputs), 0)
+            allpids = torch.cat((allpids, pids), 0)
+            allcamid = torch.cat((allcamid, camid ), 0)
 
+        batch_time.update(time.time() - end)
+        end = time.time()
 
+        if (i + 1) % print_freq == 0:
+            print('Extract Features: [{}/{}]\t'
+                  'Time {:.3f} ({:.3f})\t'
+                  'Data {:.3f} ({:.3f})\t'
+                  .format(i + 1, len(data_loader),
+                          batch_time.val, batch_time.avg,
+                          data_time.val, data_time.avg))
 
-
+    return allfeatures, allpids, allcamid
 
 
 def extract_features(model, data_loader, print_freq=100, metric=None):
@@ -55,6 +72,15 @@ def extract_features(model, data_loader, print_freq=100, metric=None):
                           data_time.val, data_time.avg))
 
     return features, labels
+
+def pairwise_distance_tensor(x, metric=None):
+    n = x.size(0)
+    if metric is not None:
+        x = metric.transform(x)
+    dist = torch.pow(x, 2).sum(1) * 2
+    dist = dist.expand(n, n) - 2 * torch.mm(x, x.t())
+    return dist
+
 
 
 def pairwise_distance(features, query=None, gallery=None, metric=None):
@@ -94,6 +120,51 @@ def evaluate_all(distmat, query=None, gallery=None,
     else:
         assert (query_ids is not None and gallery_ids is not None
                 and query_cams is not None and gallery_cams is not None)
+
+    # Compute mean AP
+    mAP = mean_ap(distmat, query_ids, gallery_ids, query_cams, gallery_cams)
+    print('Mean AP: {:4.1%}'.format(mAP))
+
+    # Compute all kinds of CMC scores
+    cmc_configs = {
+        'allshots': dict(separate_camera_set=False,
+                         single_gallery_shot=False,
+                         first_match_break=False),
+        'cuhk03': dict(separate_camera_set=True,
+                       single_gallery_shot=True,
+                       first_match_break=False),
+        'market1501': dict(separate_camera_set=False,
+                           single_gallery_shot=False,
+                           first_match_break=True)}
+    cmc_scores = {name: cmc(distmat, query_ids, gallery_ids,
+                            query_cams, gallery_cams, **params)
+                  for name, params in cmc_configs.items()}
+
+    print('CMC Scores{:>12}{:>12}{:>12}'
+          .format('allshots', 'cuhk03', 'market1501'))
+    for k in cmc_topk:
+        print('  top-{:<4}{:12.1%}{:12.1%}{:12.1%}'
+              .format(k, cmc_scores['allshots'][k - 1],
+                      cmc_scores['cuhk03'][k - 1],
+                      cmc_scores['market1501'][k - 1]))
+
+    # Use the allshots cmc top-1 score for validation criterion
+    return cmc_scores['allshots'][0]
+
+
+
+def evaluate_seq(distmat, pids, camids, cmc_topk=(1, 5, 10), score_pool='ave_pool'):
+    query_ids   =  to_numpy(pids)
+    gallery_ids =  query_ids
+    query_cams = to_numpy(camids)
+    gallery_cams = query_cams
+    distmat = distmat.data.cpu()
+
+    if score_pool == 'ave_pool':
+        distmat, query_ids, gallery_ids, query_cams, gallery_cams = \
+        avepool_dismat(distmat, query_ids, gallery_ids, query_cams, gallery_cams)
+    else:
+        raise RuntimeError
 
     # Compute mean AP
     mAP = mean_ap(distmat, query_ids, gallery_ids, query_cams, gallery_cams)
@@ -210,8 +281,9 @@ class Evaluator(object):
             distmat = pairwise_distance(features, query, gallery, metric=metric)
             return evaluate_multi(distmat, query=query, gallery=gallery)
         elif mode == "sequence":
-
-
+            features, pids, camids = extract_seqfeature(self.model, data_loader)
+            distmat = pairwise_distance_tensor(features, metric=metric)
+            return evaluate_seq(distmat, pids, camids)
         else:
             raise RuntimeError("the mode of evaluation is not defined")
 

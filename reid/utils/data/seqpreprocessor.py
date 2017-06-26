@@ -69,7 +69,7 @@ class SeqPreprocessor(object):
         else:
             flow_tensor = None
 
-        return img_tensor, flow_tensor, label, camid, start_ind, end_ind
+        return img_tensor, flow_tensor, label, camid
 
 
 

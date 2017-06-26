@@ -19,6 +19,7 @@ from reid.utils.data import seqtransforms
 from reid.utils.data.seqpreprocessor import SeqPreprocessor
 from reid.utils.data.sampler import RandomIdentitySampler
 from reid.utils.logging import Logger
+from reid.evaluators import  extract_seqfeature
 from reid.utils.serialization import load_checkpoint, save_checkpoint
 
 
@@ -169,14 +170,33 @@ def main(args):
         for g in optimizer.param_groups:
             g['lr'] = lr * g.get('lr_mult', 1)
 
+    best_top1 = 0
     # Starting training
     for epoch in range(args.start_epoch, args.epochs):
         adjust_lr(epoch)
         trainer.train(epoch, train_loader, optimizer)
 
-        top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, multi_shot=True)
+        if epoch % 3 == 0:
+            # top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
+            top1 = evaluator.evaluate(test_loader, dataset.query, dataset.gallery, mode="sequence")
+            is_best = top1 > best_top1
+            best_top1 = max(top1, best_top1)
+            save_checkpoint({
+                'state_dict': model.state_dict(),
+                'epoch': epoch + 1,
+                'best_top1': best_top1,
+            }, is_best, fpath=osp.join(args.logs_dir, 'checkpoint.pth.tar'))
 
+        print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
+              format(epoch, top1, best_top1, ' *' if is_best else ''))
 
+        # Final test
+
+    print('Test with best model:')
+    checkpoint = load_checkpoint(osp.join(args.logs_dir, 'model_best.pth.tar'))
+    model.load_state_dict(checkpoint['state_dict'])
+    metric.train(model, train_loader)
+    evaluator.evaluate(test_loader, dataset.query, dataset.gallery, mode="sequence")
 
 
 
@@ -187,6 +207,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(description="ID Training ResNet Model")
     # DATA
     parser.add_argument('-d', '--dataset', type=str, default='ilidsvidsequence',
@@ -195,9 +216,9 @@ if __name__ == '__main__':
 
     parser.add_argument('-j', '--workers', type=int, default=4)
 
-    parser.add_argument('--seq_len', type=int, default=6)
+    parser.add_argument('--seq_len', type=int, default=8)
 
-    parser.add_argument('--seq_srd', type=int, default=3)
+    parser.add_argument('--seq_srd', type=int, default=4)
 
 
     parser.add_argument('--split', type=int, default=0)

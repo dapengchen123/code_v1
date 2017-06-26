@@ -25,3 +25,12 @@ def extract_cnn_feature(model, inputs, modules=None):
     for h in handles:
         h.remove()
     return list(outputs.values())
+
+def extract_cnn_seqfeature(model, imgs, flows):
+    model.eval()
+    imgs = to_torch(imgs)
+    imgs = Variable(imgs, volatile=True)
+    flows = to_torch(flows)
+    flows = Variable(flows, volatile=True)
+    outputs = model(imgs, flows)
+    return outputs

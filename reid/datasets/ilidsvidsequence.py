@@ -11,7 +11,7 @@ import shutil
 import scipy.io as sio
 
 datasetname = 'iLIDS-VID'
-flowname = 'resimg'
+flowname = 'Farneback'
 
 
 class iLIDSVIDSEQUENCE(Datasequence):
@@ -95,7 +95,7 @@ class iLIDSVIDSEQUENCE(Datasequence):
         mkdir_if_missing(others_dir)
 
         fpaths1 = sorted(glob(osp.join(exdir1, 'i-LIDS-VID/sequences', '*/*/*.png')))
-        fpaths2 = sorted(glob(osp.join(exdir2, 'resimg', '*/*/*.png')))
+        fpaths2 = sorted(glob(osp.join(exdir2, flowname, '*/*/*.png')))
 
         identities_imgraw = [[[] for _ in range(2)] for _ in range(319)]
         identities_otherraw = [[[] for _ in range(2)] for _ in range(319)]
