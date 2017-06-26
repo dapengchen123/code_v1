@@ -23,7 +23,7 @@ from reid.utils.serialization import load_checkpoint, save_checkpoint
 
 
 def get_data(dataset_name, split_id, data_dir, batch_size, workers,
-             num_instances, combine_trainval=False):
+             num_instances, combine_trainval=True):
     root = osp.join(data_dir, dataset_name)
 
     dataset = get_dataset(dataset_name, root,
