@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import torch.nn.functional as F
 import torch.nn.init as init
-
+import torch
 from torch import nn
 from torch.autograd import Variable
 
@@ -113,9 +113,9 @@ class ResNetLSTM_btfu(nn.Module):
         ######  LSTM  part #########
         x = x.view(batch_sz, seq_len, -1)
 
-        hidden0 = init_states(LSTM_hidden, batch_sz, LSTM_layer)
-        output, _ = self.lstm (x, hidden0)
-        return  output[:, -1]
+        # hidden0 = init_states(LSTM_hidden, batch_sz, LSTM_layer)
+        # output, _ = self.lstm (x, hidden0)
+        return  torch.squeeze(torch.mean(x, 1))
 
 
 
